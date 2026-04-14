@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bittu Kumar — BSc Data Science & Applications, IIT Madras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0e0d0b;--paper:#f7f5f0;--cream:#ede9e1;--sidebar:#0d1117;
+  --accent:#3b82f6;--accent-lt:#93c5fd;--muted:#7a756d;--border:#d8d2c8;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+  --serif:"Libre Baskerville",Georgia,serif;
+  --sans:"IBM Plex Sans",sans-serif;
+  --mono:"IBM Plex Mono",monospace;
+}
+html{scroll-behavior:smooth;}
+html,body{overflow-x:hidden;max-width:100%;}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.6;}
+canvas{display:block;width:100%!important;height:auto;}
+#wrapper{display:flex;min-height:100vh;overflow-x:hidden;width:100%;}
+.marquee-bleed{width:100vw;position:relative;left:50%;transform:translateX(-50%);}
+
+/* SIDEBAR */
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--sidebar);display:flex;flex-direction:column;z-index:100;transition:transform 0.3s ease;overflow-y:auto;}
+.sb-profile{padding:1.8rem 2rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;}
+.sb-avatar{width:76px;height:76px;border-radius:0;object-fit:cover;object-position:center top;border:2.5px solid var(--accent);margin-bottom:0.9rem;display:block;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;align-items:center;justify-content:center;}
+.sb-avatar-initials{font-family:var(--mono);font-size:1.4rem;font-weight:500;color:#fff;letter-spacing:0.05em;}
+.sb-name{font-family:var(--serif);font-size:1.08rem;font-weight:700;color:#f7f5f0;letter-spacing:-0.01em;}
+.sb-role{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent-lt);margin-top:0.22rem;font-family:var(--mono);}
+
+/* Progress tracker in sidebar */
+.sb-progress{padding:0.9rem 1.6rem;border-bottom:1px solid rgba(255,255,255,0.07);}
+.sb-progress-label{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(247,245,240,0.2);margin-bottom:0.6rem;}
+.term-row{display:flex;justify-content:space-between;align-items:center;padding:0.2rem 0;}
+.term-name{font-family:var(--mono);font-size:0.62rem;color:rgba(247,245,240,0.38);letter-spacing:0.04em;}
+.term-bar-wrap{flex:1;height:3px;background:rgba(255,255,255,0.06);margin:0 0.6rem;border-radius:2px;}
+.term-bar{height:3px;border-radius:2px;background:var(--accent);}
+.term-score{font-family:var(--mono);font-size:0.58rem;color:rgba(247,245,240,0.55);}
+
+.sb-nav{flex:1;padding:1.1rem 0;}
+.sb-nav-label{font-size:0.55rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(247,245,240,0.2);padding:0 1.6rem 0.5rem;font-family:var(--mono);}
+.sb-nav-link{display:flex;align-items:center;gap:0.72rem;padding:0.52rem 1.6rem;font-size:0.8rem;font-weight:400;color:rgba(247,245,240,0.42);cursor:pointer;transition:color 0.2s,background 0.2s;border:none;background:none;width:100%;text-align:left;font-family:var(--sans);letter-spacing:0.01em;}
+.sb-nav-link:hover,.sb-nav-link.active{color:#f7f5f0;background:rgba(255,255,255,0.04);}
+.sb-nav-link.active{color:var(--accent-lt);border-right:2px solid var(--accent);}
+.sb-nav-link svg{width:14px;height:14px;flex-shrink:0;opacity:0.4;}
+.sb-nav-link.active svg,.sb-nav-link:hover svg{opacity:1;}
+
+.sb-minichart{padding:1rem 1.6rem;border-top:1px solid rgba(255,255,255,0.07);}
+.sb-minichart-label{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(247,245,240,0.2);margin-bottom:0.55rem;}
+.sb-quote{padding:1.1rem 1.6rem;border-top:1px solid rgba(255,255,255,0.07);}
+.sb-quote-text{font-family:var(--serif);font-style:italic;font-size:0.74rem;line-height:1.6;color:rgba(247,245,240,0.32);}
+.sb-quote-attr{font-size:0.58rem;font-family:var(--mono);color:rgba(147,197,253,0.4);margin-top:0.55rem;letter-spacing:0.06em;}
+
+/* MAIN */
+#main{margin-left:280px;flex:1;min-height:100vh;min-width:0;}
+#topbar{position:sticky;top:0;z-index:50;background:rgba(247,245,240,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;padding:0 3rem;height:52px;}
+.topbar-breadcrumb{font-family:var(--mono);font-size:0.64rem;color:var(--muted);letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+.topbar-cta{padding:0.4rem 1.05rem;background:var(--ink);color:var(--paper);border:none;font-family:var(--sans);font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.topbar-cta:hover{background:var(--accent);color:#fff;}
+#mob-toggle{display:none;background:none;border:none;padding:0.35rem 0.4rem;cursor:pointer;line-height:0;flex-shrink:0;order:-1;}
+#mob-toggle span{display:block;width:20px;height:1.5px;background:var(--ink);margin:4px 0;transition:all 0.3s;}
+#content{padding:3rem;max-width:960px;overflow-x:hidden;}
+#content *{max-width:100%;}
+
+@media(max-width:1024px){
+  #sidebar{width:240px;}
+  #main{margin-left:240px;}
+  #topbar{padding:0 2rem;}
+  #content{padding:2rem;max-width:100%;}
+  .sec-title{font-size:clamp(1.5rem,2.5vw,2.5rem);}
+}
+@media(max-width:768px){
+  #sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;transform:translateX(-100%);z-index:200;}
+  #sidebar.open{transform:translateX(0);box-shadow:8px 0 32px rgba(0,0,0,0.45);}
+  #main{margin-left:0;}
+  #mob-toggle{display:block;}
+  #topbar{padding:0 1rem;}
+  #content{padding:1.2rem 1rem;max-width:100%;}
+  .about-grid,.contact-grid,.nl-block,.card-grid,.book-grid,.form-row{grid-template-columns:1fr!important;}
+  .res-grid{grid-template-columns:repeat(2,1fr);}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .chart-wrap{padding:0.85rem 0.75rem;}
+  .chart-header{flex-direction:column;gap:0.48rem;}
+  .post-item{grid-template-columns:1fr;gap:0.65rem;}
+  .post-arr{display:none;}
+  .featured-post{padding:1.3rem;}
+  .featured-post .post-ttl{font-size:1.15rem!important;}
+  .nl-block{padding:1.7rem 1.3rem;}
+  .photo-box{aspect-ratio:4/3;}
+  .sec-title{font-size:clamp(1.55rem,6vw,2.3rem)!important;}
+  .sb-avatar{width:62px;height:62px;}
+}
+@media(max-width:480px){
+  #content{padding:1rem 0.85rem;}
+  .res-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .sec-title{font-size:clamp(1.2rem,5vw,1.8rem)!important;}
+  p{word-break:break-word;}
+  .pullquote p{font-size:0.85rem;}
+  .chart-wrap{display:none;}
+  .contact-form{padding:0;}
+  .form-row{grid-template-columns:1fr;}
+}
+
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;opacity:0;transition:opacity 0.3s;}
+#sidebar-overlay.active{display:block;opacity:1;}
+.page{animation:pageIn 0.35s ease both;}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.55s ease,transform 0.55s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+.sec-eyebrow{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:0.7rem;margin-bottom:0.75rem;}
+.sec-eyebrow::after{content:"";flex:0 0 22px;height:1px;background:var(--accent);}
+.sec-title{font-family:var(--serif);font-size:clamp(2rem,3.5vw,3.2rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;margin-bottom:1.25rem;}
+
+.pullquote{border-left:2px solid var(--accent);padding:0.72rem 1.25rem;margin:2rem 0;background:rgba(59,130,246,0.04);}
+.pullquote p{font-family:var(--serif);font-style:italic;font-size:0.96rem;line-height:1.65;color:#3a3530;}
+.pullquote cite{display:block;font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:0.42rem;letter-spacing:0.06em;font-style:normal;}
+
+/* CHARTS */
+.chart-wrap{background:var(--sidebar);border:1px solid #1e2a3a;padding:1.4rem;margin:1.8rem 0;position:relative;overflow:hidden;}
+.chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.9rem;}
+.chart-ticker{font-family:var(--mono);font-size:0.8rem;font-weight:500;color:#f7f5f0;letter-spacing:0.06em;}
+.chart-price{font-family:var(--mono);font-size:1.3rem;font-weight:500;color:#f7f5f0;margin-top:0.08rem;}
+.chart-change{font-family:var(--mono);font-size:0.68rem;padding:2px 7px;border-radius:2px;display:inline-block;margin-top:0.18rem;}
+.chg-up{background:rgba(16,185,129,0.14);color:var(--green);}
+.chg-dn{background:rgba(239,68,68,0.14);color:var(--red);}
+.chart-period-btns{display:flex;gap:0.38rem;flex-wrap:wrap;}
+.period-btn{font-family:var(--mono);font-size:0.58rem;padding:2px 7px;border:1px solid rgba(255,255,255,0.1);background:none;color:rgba(247,245,240,0.38);cursor:pointer;transition:all 0.15s;}
+.period-btn.active,.period-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin:2.2rem 0;}
+.stat-cell{background:var(--paper);padding:1.3rem;}
+.stat-num{font-family:var(--serif);font-size:2rem;font-weight:700;line-height:1;letter-spacing:-0.02em;}
+.stat-lbl{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-top:0.32rem;}
+
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:1.8rem;}
+.card-item{background:var(--paper);padding:1.7rem;}
+.card-num{font-family:var(--serif);font-size:2.6rem;font-weight:700;color:var(--border);line-height:1;}
+.card-title{font-family:var(--serif);font-size:1rem;font-weight:700;margin:0.4rem 0 0.45rem;}
+.card-body{font-size:0.83rem;color:var(--muted);line-height:1.75;}
+
+/* MARQUEE */
+.marquee-bar{background:var(--sidebar);padding:0.68rem 0;overflow:hidden;white-space:nowrap;}
+.marquee-inner{display:inline-flex;animation:marquee 30s linear infinite;}
+.marquee-inner span{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(247,245,240,0.26);padding:0 1.8rem;}
+.marquee-inner span.ma{color:var(--accent-lt);}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* POSTS */
+.post-list{margin-top:1.4rem;}
+.post-item{display:grid;grid-template-columns:1fr auto;gap:1.4rem;align-items:center;padding:1.5rem 0;border-bottom:1px solid var(--border);cursor:pointer;transition:padding-left 0.2s;}
+.post-item:first-child{border-top:1px solid var(--border);}
+.post-item:hover{padding-left:0.55rem;}
+.post-tag{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:0.32rem;}
+.post-ttl{font-family:var(--serif);font-size:1.15rem;font-weight:700;line-height:1.3;margin-bottom:0.32rem;}
+.post-exc{font-size:0.83rem;color:var(--muted);line-height:1.7;max-width:520px;}
+.post-meta{font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:0.06em;margin-top:0.32rem;}
+.post-arr{color:var(--muted);}
+.featured-post{border:1px solid var(--border);padding:1.8rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
+.featured-post:hover{border-color:var(--accent);background:rgba(59,130,246,0.02);}
+.featured-post .post-tag{margin-bottom:0.55rem;}
+.featured-post .post-ttl{font-family:var(--serif);font-size:1.55rem;font-weight:700;line-height:1.25;}
+.filters{display:flex;gap:0.38rem;flex-wrap:wrap;margin-bottom:1rem;}
+.filter-btn{font-family:var(--mono);font-size:0.6rem;padding:4px 10px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--muted);transition:all 0.15s;letter-spacing:0.08em;text-transform:uppercase;}
+.filter-btn.active,.filter-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* NEWSLETTER */
+.nl-block{background:var(--sidebar);padding:2.4rem;margin-top:2.8rem;display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center;}
+.nl-title{font-family:var(--serif);font-size:1.75rem;font-weight:700;color:#f7f5f0;line-height:1.2;margin-bottom:0.52rem;}
+.nl-sub{font-size:0.83rem;color:rgba(247,245,240,0.42);line-height:1.8;}
+.nl-form{display:flex;flex-direction:column;gap:0.6rem;}
+.nl-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:0.72rem 1rem;font-family:var(--sans);font-size:0.84rem;color:#f7f5f0;outline:none;transition:border-color 0.2s;}
+.nl-input::placeholder{color:rgba(247,245,240,0.22);}
+.nl-input:focus{border-color:var(--accent);}
+.nl-btn{background:var(--accent);color:#fff;border:none;padding:0.78rem;font-family:var(--sans);font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+.nl-btn:hover{background:#2563eb;}
+.nl-note{font-family:var(--mono);font-size:0.56rem;color:rgba(247,245,240,0.16);letter-spacing:0.05em;}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;}
+.photo-box{background:var(--sidebar);aspect-ratio:3/4;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.photo-box img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
+.photo-box-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.15);font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;gap:0.8rem;}
+.photo-box-placeholder svg{width:40px;height:40px;opacity:0.2;}
+.photo-box-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);}
+.photo-box-tag{position:absolute;bottom:1.3rem;left:1.3rem;background:rgba(247,245,240,0.95);padding:0.8rem 1.05rem;border-left:2px solid var(--accent);}
+.photo-box-tag strong{font-size:0.8rem;font-weight:600;}
+.photo-box-tag span{display:block;font-family:var(--mono);font-size:0.58rem;color:var(--muted);letter-spacing:0.06em;margin-top:0.16rem;}
+.about-body{font-size:0.93rem;line-height:1.9;color:#3d3930;}
+.about-body p+p{margin-top:1.05rem;}
+.rules-list{margin-top:2rem;display:flex;flex-direction:column;gap:0.7rem;}
+.rule-item{display:flex;gap:0.9rem;padding:0.85rem 1.05rem;border:1px solid var(--border);align-items:flex-start;}
+.rule-n{font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--accent);line-height:1;flex-shrink:0;}
+.rule-item p{font-size:0.84rem;line-height:1.75;color:#4a463f;}
+
+/* SKILLS / RESOURCES */
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:1.8rem;}
+.res-card{background:var(--paper);padding:1.7rem;transition:background 0.2s;cursor:pointer;text-decoration:none;color:inherit;display:block;}
+.res-card:hover{background:#f0ece3;}
+.res-icon{width:32px;height:32px;color:var(--accent);margin-bottom:1rem;}
+.res-title{font-family:var(--serif);font-size:0.98rem;font-weight:700;margin-bottom:0.42rem;}
+.res-body{font-size:0.79rem;color:var(--muted);line-height:1.7;}
+.res-link{display:inline-block;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-top:0.85rem;}
+.books-section{margin-top:3.8rem;}
+.books-section h2{font-family:var(--serif);font-size:1.7rem;font-weight:700;margin-bottom:1.3rem;}
+.book-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);}
+.book-item{background:var(--paper);padding:1.05rem;display:flex;gap:0.9rem;align-items:flex-start;}
+.book-n{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--border);line-height:1;flex-shrink:0;}
+.book-info h4{font-family:var(--serif);font-size:0.88rem;font-weight:700;margin-bottom:0.16rem;}
+.book-info span{font-family:var(--mono);font-size:0.61rem;color:var(--muted);}
+.book-info p{font-size:0.76rem;color:var(--muted);margin-top:0.32rem;line-height:1.6;}
+
+/* CONTACT */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;}
+.contact-body{font-size:0.91rem;line-height:1.85;color:#3d3930;}
+.contact-body p+p{margin-top:1rem;}
+.channels{display:flex;flex-direction:column;gap:0.65rem;margin-top:1.7rem;}
+.channel{display:flex;align-items:center;gap:0.9rem;padding:0.8rem 1.05rem;border:1px solid var(--border);text-decoration:none;color:inherit;transition:border-color 0.2s;}
+.channel:hover{border-color:var(--accent);}
+.channel svg{width:16px;height:16px;flex-shrink:0;color:var(--muted);}
+.channel-name{font-size:0.72rem;font-weight:600;letter-spacing:0.04em;}
+.channel-val{font-family:var(--mono);font-size:0.64rem;color:var(--muted);margin-top:0.1rem;}
+.contact-form{display:flex;flex-direction:column;gap:0.62rem;}
+.contact-form h3{font-family:var(--serif);font-size:1.2rem;font-weight:700;margin-bottom:0.38rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.62rem;}
+.f-input{background:var(--cream);border:1px solid var(--border);padding:0.78rem 1rem;font-family:var(--sans);font-size:0.84rem;color:var(--ink);outline:none;transition:border-color 0.2s;width:100%;}
+.f-input::placeholder{color:var(--muted);}
+.f-input:focus{border-color:var(--accent);}
+textarea.f-input{resize:vertical;min-height:105px;}
+.f-btn{background:var(--ink);color:var(--paper);border:none;padding:0.84rem;font-family:var(--sans);font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+.f-btn:hover{background:var(--accent);color:#fff;}
+
+/* POST */
+.post-back{display:inline-flex;align-items:center;gap:0.48rem;font-family:var(--mono);font-size:0.64rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:1.3rem;transition:color 0.2s;padding:0;}
+.post-back:hover{color:var(--ink);}
+.post-back svg{width:12px;height:12px;}
+.post-header{border-bottom:1px solid var(--border);padding-bottom:1.7rem;margin-bottom:1.9rem;}
+.post-tag-line{font-family:var(--mono);font-size:0.61rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:0.65rem;}
+.post-main-title{font-family:var(--serif);font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;}
+.post-byline{display:flex;align-items:center;gap:0.85rem;margin-top:1.3rem;font-family:var(--mono);font-size:0.64rem;color:var(--muted);letter-spacing:0.04em;flex-wrap:wrap;}
+.post-byline strong{color:var(--ink);font-weight:500;}
+.post-content{font-size:0.98rem;line-height:1.9;color:#2d2a25;max-width:680px;}
+.post-content p{margin-bottom:1.25rem;}
+.post-content h2{font-family:var(--serif);font-size:1.45rem;font-weight:700;margin:2.3rem 0 0.85rem;}
+.post-content blockquote{border-left:2px solid var(--accent);padding:0.62rem 1.25rem;margin:1.5rem 0;background:rgba(59,130,246,0.04);}
+.post-content blockquote p{font-family:var(--serif);font-style:italic;font-size:0.96rem;margin:0;}
+.post-content ul{padding-left:1.25rem;margin-bottom:1.25rem;}
+.post-content ul li{margin-bottom:0.32rem;line-height:1.8;}
+.post-divider{border:none;border-top:1px solid var(--border);margin:2.3rem 0;}
+
+.btn-p{display:inline-block;padding:0.7rem 1.6rem;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border:none;transition:background 0.2s;text-decoration:none;}
+.btn-p:hover{background:var(--accent);color:#fff;}
+.btn-s{display:inline-block;padding:0.7rem 1.6rem;border:1px solid var(--ink);color:var(--ink);font-family:var(--sans);font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;background:none;transition:all 0.2s;text-decoration:none;}
+.btn-s:hover{background:var(--ink);color:var(--paper);}
+
+/* TERM PROGRESS PAGE */
+.term-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:1.8rem;}
+.term-card{background:var(--paper);padding:1.5rem;}
+.term-card-num{font-family:var(--mono);font-size:0.62rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.35rem;}
+.term-card-title{font-family:var(--serif);font-size:1.05rem;font-weight:700;margin-bottom:0.75rem;}
+.subject-list{display:flex;flex-direction:column;gap:0.38rem;}
+.subject-row{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;}
+.subject-name{color:#3d3930;}
+.subject-grade{font-family:var(--mono);font-size:0.68rem;padding:1px 6px;border-radius:2px;}
+.grade-s{background:rgba(16,185,129,0.1);color:#065f46;}
+.grade-a{background:rgba(59,130,246,0.1);color:#1e40af;}
+.grade-ip{background:rgba(245,158,11,0.1);color:#92400e;}
+
+/* HOME HERO */
+.home-hero{margin-bottom:2.4rem;}
+.home-hero-eyebrow{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:0.9rem;}
+.home-hero-title{font-family:var(--serif);font-size:clamp(1.9rem,3vw,2.8rem);font-weight:700;line-height:1.18;letter-spacing:-0.02em;margin-bottom:1.1rem;}
+.home-hero-sub{font-size:0.93rem;color:var(--muted);line-height:1.85;max-width:540px;}
+.home-hero-actions{display:flex;gap:0.75rem;margin-top:1.6rem;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div id="wrapper">
+
+<aside id="sidebar">
+  <div class="sb-profile" onclick="go('home')">
+    <div class="sb-avatar" style="width:76px;height:76px;display:flex;align-items:center;justify-content:center;">
+      <span class="sb-avatar-initials">BK</span>
+    </div>
+    <div class="sb-name">Bittu Kumar</div>
+    <div class="sb-role">BSc DS &amp; Applications · IIT Madras</div>
+  </div>
+
+  <div class="sb-progress">
+    <div class="sb-progress-label">Term Progress</div>
+    <div class="term-row"><span class="term-name">Term 1</span><div class="term-bar-wrap"><div class="term-bar" style="width:100%"></div></div><span class="term-score">Done</span></div>
+    <div class="term-row"><span class="term-name">Term 2</span><div class="term-bar-wrap"><div class="term-bar" style="width:100%"></div></div><span class="term-score">Done</span></div>
+    <div class="term-row"><span class="term-name">Term 3</span><div class="term-bar-wrap"><div class="term-bar" style="width:70%"></div></div><span class="term-score">In progress</span></div>
+    <div class="term-row"><span class="term-name">Term 4</span><div class="term-bar-wrap"><div class="term-bar" style="width:0%"></div></div><span class="term-score">Upcoming</span></div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-nav-label">Navigation</div>
+    <button class="sb-nav-link active" data-pg="home" onclick="go('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+    </button>
+    <button class="sb-nav-link" data-pg="about" onclick="go('about')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8"/></svg>About
+    </button>
+    <button class="sb-nav-link" data-pg="journey" onclick="go('journey')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Journey
+    </button>
+    <button class="sb-nav-link" data-pg="projects" onclick="go('projects')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Projects
+    </button>
+    <button class="sb-nav-link" data-pg="blog" onclick="go('blog')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg>Blog
+    </button>
+    <button class="sb-nav-link" data-pg="resources" onclick="go('resources')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Resources
+    </button>
+    <button class="sb-nav-link" data-pg="contact" onclick="go('contact')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Contact
+    </button>
+  </nav>
+
+  <div class="sb-minichart">
+    <div class="sb-minichart-label">GPA Trend &mdash; All Terms</div>
+    <canvas id="sb-chart" data-h="62" height="62"></canvas>
+  </div>
+  <div class="sb-quote">
+    <p class="sb-quote-text">&ldquo;An approximate answer to the right question is worth more than a precise answer to the wrong one.&rdquo;</p>
+    <p class="sb-quote-attr">&mdash; John Tukey</p>
+  </div>
+</aside>
+
+<main id="main">
+  <div id="topbar">
+    <button id="mob-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="topbar-breadcrumb" id="breadcrumb">Home</span>
+    <button class="topbar-cta" onclick="go('projects')">View Projects</button>
+  </div>
+  <div id="content"><div id="app"></div></div>
+</main>
+</div>
+
+<script>
+const POSTS=[
+  {id:"stat2",tag:"Statistics",read:"7 min",date:"Apr 8, 2025",
+   title:"Why Bayes' Theorem Broke My Brain (And Then Fixed It)",
+   excerpt:"I spent three weeks confused by conditional probability. Here's the intuition that finally made it click — and how it changed the way I approach data.",
+   body:`<p>The IITM statistics course hit me hard in Term 2. I could solve the formulas mechanically, but I had no intuition for what Bayes was actually saying.</p><h2>The Insight That Changed Everything</h2><p>Bayes' theorem is just a recipe for updating your beliefs when you get new information. Prior belief + new evidence = updated belief. That's it. The formula is just making this precise.</p><blockquote><p>All statistical inference is, at its core, learning from data to reduce uncertainty.</p></blockquote><h2>Why This Matters for Data Science</h2><p>Once you understand that probability is a measure of belief, not just frequency, you start asking better questions. Not "what's the probability this coin is fair?" but "given what I've observed, how much should I believe this coin is fair?"</p><h2>How I Applied It</h2><p>I built a small spam classifier using naive Bayes on the IITM assignment dataset. The model was surprisingly good — 94% accuracy — and building it from scratch made the math feel alive for the first time.</p>`},
+  {id:"python1",tag:"Programming",read:"5 min",date:"Mar 22, 2025",
+   title:"From Beginner to Term 1: What Python Actually Teaches You (It's Not Syntax)",
+   excerpt:"The IITM Python course isn't really about Python. It's about how to think about problems. Here's what I wish someone had told me before I started.",
+   body:`<p>I came into Term 1 having done some YouTube Python tutorials. I thought I knew what was coming. I was wrong.</p><h2>The Real Lesson</h2><p>The course teaches decomposition — breaking hard problems into small, solvable pieces. The programming is just the medium. The skill being built is thinking precisely.</p><blockquote><p>If you can't explain what your function does in one sentence, you don't understand the problem yet.</p></blockquote><h2>What Tripped Me Up</h2><p>Week 4, recursion. I stared at the screen for two hours before it clicked. The key was drawing the call stack on paper, not staring at the code.</p>`},
+  {id:"ml1",tag:"Machine Learning",read:"9 min",date:"Mar 5, 2025",
+   title:"Linear Regression Is Not Simple — And That's the Point",
+   excerpt:"Everyone learns linear regression first. Very few people learn what it's actually assuming. Those assumptions are where real data science begins.",
+   body:`<p>Term 3 introduced machine learning formally. The first model: linear regression. I'd seen it before. I thought I understood it. I did not.</p><h2>The Assumptions Nobody Talks About</h2><p>OLS regression assumes: linearity, independence of errors, homoscedasticity, and normality of residuals. Violate any of these and your confidence intervals are lies.</p><blockquote><p>A model is not right or wrong. It is either useful or not useful for the question you're asking.</p></blockquote><h2>What I Actually Learned</h2><p>The most important skill in regression isn't running the model. It's diagnosing whether the model is appropriate for your data in the first place. Residual plots, Q-Q plots, and leverage statistics — these are what separate cargo-cult ML from real analysis.</p>`},
+  {id:"data_story",tag:"Data Storytelling",read:"6 min",date:"Feb 14, 2025",
+   title:"The Chart That Lied to Me (And What I Did About It)",
+   excerpt:"I made a visualisation for an assignment that was technically correct and completely misleading. Here's what the grader caught that I missed.",
+   body:`<p>Term 3 statistics assignment: visualise a dataset of exam scores. I made a bar chart. It looked clean. I got marked down.</p><h2>The Problem</h2><p>My y-axis started at 60, not 0. This made a 3-point difference look like a massive gap. The grader pointed out that this is one of the most common ways data visualisations deceive — usually accidentally, sometimes deliberately.</p><blockquote><p>Every design choice in a chart is an argument. Make sure you know what argument you're making.</p></blockquote><h2>The Fix and the Lesson</h2><p>I rebuilt the chart with a zero baseline, and the story completely changed. The groups I thought were dramatically different were actually nearly identical. The data hadn't changed. My interpretation had.</p>`},
+  {id:"grind",tag:"IITM Life",read:"11 min",date:"Jan 10, 2025",
+   title:"Surviving Term 2: What 5 Assignments Per Week Does to a Person",
+   excerpt:"An honest account of what the IITM workload looks like from the inside — the schedule, the mistakes, and what actually works.",
+   body:`<p>Term 2 at IITM is where the program separates serious students from casual ones. I was almost in the second group.</p><h2>The Reality of the Workload</h2><p>In peak weeks I had graded assignments due in Mathematics for Data Science, Statistics 1, English 1, and the weekly programming assignments. Plus the live session quizzes.</p><blockquote><p>The goal is not to memorise content. The goal is to build the habit of working consistently, even when you don't feel like it.</p></blockquote><h2>What Actually Worked</h2><p>I started treating IITM like a job. Same hours, same desk, same start time every day. The variability was the enemy — not the difficulty.</p>`}
+];
+
+let curFilter="All";
+
+const arrSvg=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+const backSvg=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
+
+function toggleSidebar(){
+  const s=document.getElementById("sidebar"),o=document.getElementById("sidebar-overlay");
+  s.classList.toggle("open");o.classList.toggle("active");
+}
+
+function go(page,arg){
+  document.querySelectorAll(".sb-nav-link").forEach(b=>b.classList.toggle("active",b.dataset.pg===page));
+  const breadcrumbs={home:"Home",about:"About",journey:"Journey",projects:"Projects",blog:"Blog",resources:"Resources",contact:"Contact",post:"Blog / Post"};
+  document.getElementById("breadcrumb").textContent=breadcrumbs[page]||page;
+  const app=document.getElementById("app");
+  app.innerHTML=`<div class="page">`+renderPage(page,arg)+`</div>`;
+  window.scrollTo(0,0);
+  setTimeout(()=>{
+    app.querySelectorAll(".reveal").forEach((el,i)=>{
+      setTimeout(()=>el.classList.add("visible"),80+i*60);
+    });
+    drawPageCharts(page);
+  },50);
+  if(window.innerWidth<=768){
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebar-overlay").classList.remove("active");
+  }
+}
+
+function renderPage(page,arg){
+  if(page==="home") return renderHome();
+  if(page==="about") return renderAbout();
+  if(page==="journey") return renderJourney();
+  if(page==="projects") return renderProjects();
+  if(page==="blog") return renderBlog();
+  if(page==="post") return renderPost(arg);
+  if(page==="resources") return renderResources();
+  if(page==="contact") return renderContact();
+  return "<p>Page not found.</p>";
+}
+
+function renderHome(){
+  const p0=POSTS[0],p1=POSTS[1],p2=POSTS[2];
+  return `
+  <div class="home-hero reveal">
+    <div class="home-hero-eyebrow">BSc Data Science &amp; Applications · IIT Madras</div>
+    <h1 class="home-hero-title">Learning data science<br>one term at a time.</h1>
+    <p class="home-hero-sub">I'm Bittu Kumar from Jamshedpur — documenting my journey through the IIT Madras online BSc programme: the maths, the code, the confusion, and the occasional breakthrough.</p>
+    <div class="home-hero-actions">
+      <button class="btn-p" onclick="go('journey')">My Journey &rarr;</button>
+      <button class="btn-s" onclick="go('projects')">View Projects</button>
+    </div>
+  </div>
+
+  <div class="stats-row reveal">
+    <div class="stat-cell"><div class="stat-num">3</div><div class="stat-lbl">Terms Completed</div></div>
+    <div class="stat-cell"><div class="stat-num">12+</div><div class="stat-lbl">Subjects Cleared</div></div>
+    <div class="stat-cell"><div class="stat-num">8</div><div class="stat-lbl">Projects Built</div></div>
+  </div>
+
+  <div class="marquee-bar marquee-bleed reveal" style="margin:1.8rem 0;">
+    <div class="marquee-inner">
+      <span class="ma">&bull; PYTHON</span><span>Data Structures</span><span class="ma">&bull; STATISTICS</span><span>Probability Theory</span><span class="ma">&bull; MACHINE LEARNING</span><span>Linear Models</span><span class="ma">&bull; MATHS</span><span>Calculus &amp; Algebra</span><span class="ma">&bull; IITM</span><span>Online BSc Programme</span>
+      <span class="ma">&bull; PYTHON</span><span>Data Structures</span><span class="ma">&bull; STATISTICS</span><span>Probability Theory</span><span class="ma">&bull; MACHINE LEARNING</span><span>Linear Models</span><span class="ma">&bull; MATHS</span><span>Calculus &amp; Algebra</span><span class="ma">&bull; IITM</span><span>Online BSc Programme</span>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;" class="reveal">
+    <div class="sec-eyebrow">Current Term</div>
+    <h2 class="sec-title" style="font-size:1.65rem;margin-bottom:0.38rem;">Term 3 — In Progress</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.9rem;">Machine Learning Foundations &middot; Statistics 2 &middot; Business Data Management &middot; PDSA</p>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <div><div class="chart-ticker">Term 3 — Assignment Score Trend</div><div class="chart-price">87.4%</div><div class="chart-change chg-up">+4.2% vs Term 2</div></div>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:rgba(247,245,240,0.2);padding-top:0.28rem;">Week by week</div>
+      </div>
+      <canvas id="main-chart" data-h="195" height="195"></canvas>
+    </div>
+  </div>
+
+  <div style="margin-top:2.2rem;" class="reveal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem;flex-wrap:wrap;gap:0.5rem;">
+      <div><div class="sec-eyebrow">Latest Writing</div><h2 class="sec-title" style="font-size:1.65rem;margin-bottom:0;">From the blog</h2></div>
+      <button onclick="go('blog')" style="font-family:var(--mono);font-size:0.61rem;letter-spacing:0.1em;text-transform:uppercase;background:none;border:none;border-bottom:1px solid var(--muted);cursor:pointer;color:var(--muted);padding-bottom:2px;">View all &rarr;</button>
+    </div>
+    <div class="featured-post" onclick="go('post','${p0.id}')">
+      <div class="post-tag">${p0.tag} &middot; ${p0.read}</div>
+      <div class="post-ttl">${p0.title}</div>
+      <p class="post-exc" style="margin-top:0.55rem;">${p0.excerpt}</p>
+      <div class="post-meta" style="margin-top:0.85rem;">${p0.date}</div>
+    </div>
+    <div class="post-list">${[p1,p2].map(p=>`<div class="post-item" onclick="go('post','${p.id}')"><div><div class="post-tag">${p.tag}</div><div class="post-ttl">${p.title}</div><p class="post-exc">${p.excerpt}</p><div class="post-meta">${p.date} &middot; ${p.read}</div></div><div class="post-arr">${arrSvg}</div></div>`).join("")}</div>
+  </div>
+
+  <div class="nl-block reveal">
+    <div><div class="sec-eyebrow" style="color:var(--accent-lt);">Newsletter</div><h2 class="nl-title">Notes from<br>the programme.</h2><p class="nl-sub">Occasional emails — one concept explained clearly, one project update, something I learned this term.</p></div>
+    <div class="nl-form"><input class="nl-input" type="text" placeholder="Your name"/><input class="nl-input" type="email" placeholder="Email address"/><button class="nl-btn" onclick="subDone(this)">Subscribe &mdash; Free</button><p class="nl-note">No spam. Just real notes from a real student.</p></div>
+  </div>`;
+}
+
+function renderAbout(){
+  return `<div class="reveal"><div class="sec-eyebrow">About Me</div><h1 class="sec-title">From Jamshedpur to IIT Madras — online.</h1></div>
+  <div class="about-grid" style="margin-top:2rem;">
+    <div class="reveal">
+      <div class="photo-box">
+        <div class="photo-box-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.418 3.582-8 8-8s8 3.582 8 8"/></svg>
+          <span>Add your photo</span>
+        </div>
+        <div class="photo-box-bar"></div>
+        <div class="photo-box-tag"><strong>Bittu Kumar</strong><span>Student · Jamshedpur, Jharkhand</span></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="about-body">
+        <p>I'm a BSc Data Science &amp; Applications student at IIT Madras — one of the first cohorts in the online programme. I joined because I wanted to study at IIT without leaving Jamshedpur, and because data science was the most honest path I could find into the world of technology and mathematics.</p>
+        <p>Before IITM, I studied science in school and was always more comfortable with numbers than words. The qualifier exam was the hardest thing I'd done at that point. Passing it felt like a door opening.</p>
+        <p>I'm interested in statistics, machine learning, and how data is used — and misused — to tell stories. I write about what I'm learning because writing forces me to understand things properly.</p>
+      </div>
+      <div class="pullquote" style="margin:1.5rem 0;">
+        <p>&ldquo;I started this blog because I wanted to document what it actually looks like to learn data science from scratch — the confusion, the slow progress, and the moments when something finally makes sense.&rdquo;</p>
+        <cite>&mdash; Bittu Kumar, 2025</cite>
+      </div>
+      <h3 style="font-family:var(--serif);font-size:1.08rem;font-weight:700;margin-bottom:0.85rem;">How I approach learning</h3>
+      <div class="rules-list">
+        <div class="rule-item"><span class="rule-n">01</span><p><strong>Build something with every concept.</strong> A concept only counts as learned when I've used it in code or on real data.</p></div>
+        <div class="rule-item"><span class="rule-n">02</span><p><strong>Write before you google.</strong> If I'm stuck, I try to write down exactly what I don't understand before searching. This forces precision.</p></div>
+        <div class="rule-item"><span class="rule-n">03</span><p><strong>Stay consistent, not intense.</strong> Studying 2 hours every day beats 14 hours on Sunday.</p></div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:2rem;flex-wrap:wrap;"><button class="btn-p" onclick="go('journey')">See My Journey</button><button class="btn-s" onclick="go('contact')">Get in Touch</button></div>
+    </div>
+  </div>
+  <div style="margin-top:2.8rem;" class="reveal">
+    <div class="sec-eyebrow">Academic Progress</div>
+    <h2 class="sec-title" style="font-size:1.5rem;margin-bottom:0.85rem;">Score trend across terms</h2>
+    <div class="chart-wrap">
+      <div class="chart-header"><div><div class="chart-ticker">Cumulative Performance Index</div><div class="chart-price">8.4 / 10</div><div class="chart-change chg-up">Improving each term</div></div></div>
+      <canvas id="about-equity" data-h="170" height="170"></canvas>
+    </div>
+  </div>`;
+}
+
+function renderJourney(){
+  const terms=[
+    {n:"Term 1",status:"done",score:"89%",subjects:[["Mathematics for Data Science I","S"],["Statistics for Data Science I","A"],["Computational Thinking","S"],["English I","A"]]},
+    {n:"Term 2",status:"done",score:"84%",subjects:[["Mathematics for Data Science II","A"],["Statistics for Data Science II","A"],["Database Management Systems","S"],["English II","A"]]},
+    {n:"Term 3",status:"progress",score:"In progress",subjects:[["Machine Learning Foundations","IP"],["Business Data Management","IP"],["Programming, Data Structures & Algorithms","IP"],["System Commands","IP"]]},
+    {n:"Term 4",status:"upcoming",score:"Upcoming",subjects:[["Machine Learning Practice","—"],["Business Analytics","—"],["MLOps","—"],["Project","—"]]},
+  ];
+  return `<div class="reveal"><div class="sec-eyebrow">My Journey</div><h1 class="sec-title">Term by term.</h1><p style="font-size:0.91rem;color:var(--muted);max-width:480px;line-height:1.75;margin-bottom:1.7rem;">An honest record of each term at IITM — subjects, scores, and what I actually learned beyond the coursework.</p></div>
+  <div class="term-grid reveal">
+    ${terms.map(t=>`
+    <div class="term-card">
+      <div class="term-card-num">${t.n} &middot; ${t.score}</div>
+      <div class="term-card-title">${t.status==="done"?"Completed":t.status==="progress"?"In Progress":"Upcoming"}</div>
+      <div class="subject-list">
+        ${t.subjects.map(([name,grade])=>`<div class="subject-row"><span class="subject-name">${name}</span><span class="subject-grade ${grade==="S"?"grade-s":grade==="A"?"grade-a":"grade-ip"}">${grade}</span></div>`).join("")}
+      </div>
+    </div>`).join("")}
+  </div>
+  <div style="margin-top:2.8rem;" class="reveal">
+    <div class="sec-eyebrow">Milestones</div>
+    <h2 class="sec-title" style="font-size:1.5rem;margin-bottom:0.85rem;">Key moments so far</h2>
+    <div class="card-grid">
+      <div class="card-item"><div class="card-num">2023</div><div class="card-title">Passed the Qualifier</div><p class="card-body">The entrance exam that determines if you can join the programme. I prepared for 6 weeks. Passed on the first attempt.</p></div>
+      <div class="card-item"><div class="card-num">T1</div><div class="card-title">First Graded Assignment — 100%</div><p class="card-body">Programming assignment, week 3. It was a simple loop problem but the first perfect score felt significant.</p></div>
+      <div class="card-item"><div class="card-num">T2</div><div class="card-title">Built First Real Project</div><p class="card-body">A data analysis of IPL match data. First time I used pandas, matplotlib, and statistics together on something I actually cared about.</p></div>
+      <div class="card-item"><div class="card-num">T3</div><div class="card-title">First ML Model in Production</div><p class="card-body">Deployed a simple spam classifier as a Flask API. Small by any measure. But it actually works on real inputs from the internet.</p></div>
+    </div>
+  </div>`;
+}
+
+function renderProjects(){
+  const projects=[
+    {n:"01",title:"IPL Data Analysis",tag:"Data Analysis",body:"Exploratory analysis of 10 years of IPL match data. Win rate by venue, toss impact, top performers by phase. Built with pandas and matplotlib.",link:"#"},
+    {n:"02",title:"Spam Classifier API",tag:"Machine Learning",body:"Naive Bayes email classifier trained on the Enron dataset. Deployed as a Flask REST API. 94.2% accuracy on the test set.",link:"#"},
+    {n:"03",title:"IITM GPA Calculator",tag:"Tool",body:"A simple web tool for IITM students to calculate their term GPA based on subject grades and credit weights.",link:"#"},
+    {n:"04",title:"COVID-19 India Dashboard",tag:"Data Visualisation",body:"Interactive dashboard tracking state-wise case data during the pandemic. Used D3.js for the choropleth map and Chart.js for time series.",link:"#"},
+    {n:"05",title:"Student Expense Tracker",tag:"Python / SQLite",body:"A CLI tool to track monthly expenses, built as a DBMS assignment. First time I used SQL joins and aggregate queries in a real project.",link:"#"},
+    {n:"06",title:"Linear Regression from Scratch",tag:"Machine Learning",body:"Implemented gradient descent, normal equations, and regularisation in pure NumPy. No sklearn. Built to understand, not to use.",link:"#"},
+  ];
+  return `<div class="reveal"><div class="sec-eyebrow">Projects</div><h1 class="sec-title">Things I've built.</h1><p style="font-size:0.91rem;color:var(--muted);max-width:480px;line-height:1.75;margin-bottom:1.7rem;">Real projects from coursework and personal learning. All code is on GitHub.</p></div>
+  <div class="res-grid reveal">
+    ${projects.map(p=>`<a href="${p.link}" class="res-card" onclick="return false;">
+      <div class="res-title">${p.title}</div>
+      <div class="post-tag" style="margin-bottom:0.6rem;">${p.tag}</div>
+      <p class="res-body">${p.body}</p>
+      <span class="res-link">View on GitHub &rarr;</span>
+    </a>`).join("")}
+  </div>
+  <div class="pullquote reveal" style="margin-top:2.5rem;">
+    <p>&ldquo;Every project here was built to learn something specific — not to impress, but to understand. The code quality improved dramatically from project 1 to project 6.&rdquo;</p>
+    <cite>&mdash; Note to self, Jan 2025</cite>
+  </div>`;
+}
+
+function renderBlog(){
+  const tags=["All",...new Set(POSTS.map(p=>p.tag))];
+  const filtered=curFilter==="All"?POSTS:POSTS.filter(p=>p.tag===curFilter);
+  return `<div class="reveal"><div class="sec-eyebrow">Writing</div><h1 class="sec-title">The Blog</h1><p style="font-size:0.91rem;color:var(--muted);max-width:470px;line-height:1.75;margin-bottom:1.7rem;">Essays on learning data science, navigating IITM, and the concepts that surprised me.</p></div>
+  <div class="filters reveal">${tags.map(t=>`<button class="filter-btn${t===curFilter?" active":""}" onclick="setFilter('${t}')">${t}</button>`).join("")}</div>
+  <div class="post-list reveal">${filtered.map(p=>`<div class="post-item" onclick="go('post','${p.id}')"><div><div class="post-tag">${p.tag}</div><div class="post-ttl">${p.title}</div><p class="post-exc">${p.excerpt}</p><div class="post-meta">${p.date} &middot; ${p.read}</div></div><div class="post-arr">${arrSvg}</div></div>`).join("")}</div>`;
+}
+
+function setFilter(t){curFilter=t;go("blog");}
+
+function renderPost(id){
+  const p=POSTS.find(x=>x.id===id);
+  if(!p)return`<p style="padding:2rem">Post not found.</p>`;
+  return `<button class="post-back" onclick="go('blog')">${backSvg} Back to Blog</button>
+  <div class="post-header"><div class="post-tag-line">${p.tag}</div><h1 class="post-main-title">${p.title}</h1><div class="post-byline"><strong>Bittu Kumar</strong><span>&middot;</span><span>${p.date}</span><span>&middot;</span><span>${p.read} read</span></div></div>
+  <div class="post-content reveal">${p.body}<hr class="post-divider"/><p style="font-size:0.84rem;color:var(--muted);">If this was useful, share it with another IITM student who might benefit.</p><div style="display:flex;gap:0.75rem;margin-top:1.3rem;flex-wrap:wrap;"><button class="btn-p" onclick="go('blog')">&larr; More Posts</button><button class="btn-s" onclick="go('contact')">Get in Touch</button></div></div>`;
+}
+
+function renderResources(){
+  const books=[["The Elements of Statistical Learning","Hastie, Tibshirani, Friedman","The graduate-level ML textbook. Dense. Worth it. Available free online."],["Python for Data Analysis","Wes McKinney","Written by the pandas creator. The definitive reference for data wrangling."],["Naked Statistics","Charles Wheelan","The best non-technical statistics book I've read. Makes probability feel human."],["The Art of Statistics","David Spiegelhalter","How to think with data, not just calculate with it. Changed how I read papers."],["Algorithms to Live By","Brian Christian & Tom Griffiths","Computer science concepts applied to everyday decisions. Brilliant for intuition."],["How to Lie with Statistics","Darrell Huff","Short, old, still essential. Read before you trust any chart ever again."]];
+  return `<div class="reveal"><div class="sec-eyebrow">Resources</div><h1 class="sec-title">Useful things<br>for DS students</h1><p style="font-size:0.91rem;color:var(--muted);max-width:450px;line-height:1.75;margin-bottom:0.4rem;">Everything I've found genuinely useful — free where possible.</p></div>
+  <div class="res-grid reveal">
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="6" width="28" height="28" rx="2"/><path d="M14 20h12M14 14h8M14 26h6"/></svg><div class="res-title">IITM Qualifier Guide</div><p class="res-body">My notes on how to prepare for the IITM qualifier — what to study, in what order, and what tripped me up.</p><span class="res-link">Read the guide &rarr;</span></a>
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6,34 14,20 20,26 28,12 34,6"/><circle cx="34" cy="6" r="3"/></svg><div class="res-title">Term-by-Term Study Plan</div><p class="res-body">A week-by-week schedule for each IITM term. Built from experience. Includes buffer time for exam weeks.</p><span class="res-link">Download free &rarr;</span></a>
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="20" cy="20" r="14"/><path d="M20 12v8l5 5"/></svg><div class="res-title">Statistics Cheat Sheet</div><p class="res-body">Key formulas and intuitions for Statistics 1 and 2. Covers probability, distributions, hypothesis testing, and regression.</p><span class="res-link">Download PDF &rarr;</span></a>
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 32V16l12-8 12 8v16"/><path d="M16 32v-8h8v8"/></svg><div class="res-title">Python Assignment Templates</div><p class="res-body">Starter code structure for IITM programming assignments. Follows the expected submission format.</p><span class="res-link">View templates &rarr;</span></a>
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="8" width="24" height="24" rx="2"/><path d="M14 20h4v-6M22 14v12M26 17v9"/></svg><div class="res-title">GPA Calculator</div><p class="res-body">IITM-specific GPA calculator. Enter your grades, get your term GPA and projected diploma GPA instantly.</p><span class="res-link">Use the tool &rarr;</span></a>
+    <a href="#" class="res-card" onclick="return false;"><svg class="res-icon" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="20" cy="14" r="6"/><path d="M8 34c0-6.627 5.373-12 12-12s12 5.373 12 12"/></svg><div class="res-title">Beginner's Roadmap</div><p class="res-body">If you're starting Term 1 and don't know what to do outside class — this is the path I wish someone had handed me.</p><span class="res-link">Start here &rarr;</span></a>
+  </div>
+  <div class="books-section reveal"><h2>Essential Reading</h2><div class="book-grid">${books.map(([t,a,n],i)=>`<div class="book-item"><span class="book-n">${String(i+1).padStart(2,"0")}</span><div class="book-info"><h4>${t}</h4><span>${a}</span><p>${n}</p></div></div>`).join("")}</div></div>`;
+}
+
+function renderContact(){
+  return `<div class="reveal"><div class="sec-eyebrow">Contact</div><h1 class="sec-title">Get in touch</h1></div>
+  <div class="contact-grid" style="margin-top:2rem;">
+    <div class="reveal">
+      <div class="contact-body">
+        <p>I read every message I receive. If you're an IITM student, an aspiring one, or someone curious about the programme — reach out. I'm happy to talk about the experience honestly.</p>
+        <p>I'm not able to help with assignment solutions or share exam answers. But if you want to talk about concepts, study strategies, or what the programme is actually like — I'm here.</p>
+      </div>
+      <div class="channels">
+        <a href="https://linkedin.com" target="_blank" class="channel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg><div><div class="channel-name">LinkedIn</div><div class="channel-val">Bittu Kumar</div></div></a>
+        <a href="https://github.com" target="_blank" class="channel"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg><div><div class="channel-name">GitHub</div><div class="channel-val">bittukumar</div></div></a>
+        <a href="mailto:hello@bittukumar.com" class="channel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg><div><div class="channel-name">Email</div><div class="channel-val">hello@bittukumar.com</div></div></a>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="contact-form" id="cfa">
+        <h3>Send a message</h3>
+        <div class="form-row"><input class="f-input" type="text" placeholder="Your name"/><input class="f-input" type="email" placeholder="Email"/></div>
+        <input class="f-input" type="text" placeholder="Subject"/>
+        <textarea class="f-input" placeholder="Your message..."></textarea>
+        <button class="f-btn" onclick="contactDone()">Send Message</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* --- CANVAS DRAWING --- */
+function setCanvasSize(c){
+  const dpr=window.devicePixelRatio||1;
+  const w=Math.round((c.parentElement?c.parentElement.clientWidth:500)||500);
+  const h=parseInt(c.getAttribute("data-h")||c.getAttribute("height")||200);
+  c.width=w*dpr;c.height=h*dpr;c.style.width="100%";c.style.height=h+"px";
+  const ctx=c.getContext("2d");ctx.scale(dpr,dpr);return{W:w,H:h};
+}
+
+function drawLine(c,o){
+  const{W,H}=setCanvasSize(c);const ctx=c.getContext("2d");
+  const{data,color="#3b82f6",fill="rgba(59,130,246,0.08)",grid=true,pad=20}=o;
+  ctx.clearRect(0,0,W,H);if(!data||data.length<2)return;
+  const mn=Math.min(...data),mx=Math.max(...data),rng=mx-mn||1;
+  const pl=pad,pr=10,pt=pad*0.5,pb=pad,cW=W-pl-pr,cH=H-pt-pb;
+  const px=i=>pl+(i/(data.length-1))*cW,py=v=>pt+cH-((v-mn)/rng)*cH;
+  if(grid){ctx.strokeStyle="rgba(255,255,255,0.04)";ctx.lineWidth=1;for(let i=0;i<4;i++){const y=pt+(cH/3)*i;ctx.beginPath();ctx.moveTo(pl,y);ctx.lineTo(W-pr,y);ctx.stroke();}}
+  ctx.beginPath();ctx.moveTo(px(0),py(data[0]));for(let i=1;i<data.length;i++)ctx.lineTo(px(i),py(data[i]));
+  ctx.lineTo(px(data.length-1),pt+cH);ctx.lineTo(px(0),pt+cH);ctx.closePath();ctx.fillStyle=fill;ctx.fill();
+  ctx.beginPath();ctx.moveTo(px(0),py(data[0]));for(let i=1;i<data.length;i++)ctx.lineTo(px(i),py(data[i]));
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+  const lx=px(data.length-1),ly=py(data[data.length-1]);
+  ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+}
+
+function trend(start,end,n,noise){
+  return Array.from({length:n},(_,i)=>{const t=i/(n-1);return start+(end-start)*t+(Math.random()-0.5)*noise*(end-start);});
+}
+
+function drawPageCharts(page){
+  const sb=document.getElementById("sb-chart");
+  if(sb)drawLine(sb,{data:trend(6.5,8.4,30,0.04),grid:false,pad:5});
+  if(page==="home"){
+    const mc=document.getElementById("main-chart");
+    if(mc)drawLine(mc,{data:trend(70,92,14,0.08),pad:20});
+  }
+  if(page==="about"){
+    const ae=document.getElementById("about-equity");
+    if(ae)drawLine(ae,{data:trend(6.2,8.4,40,0.035),pad:20});
+  }
+}
+
+function subDone(btn){btn.textContent="\u2713 You're subscribed!";btn.style.background="#10b981";btn.disabled=true;}
+function contactDone(){document.getElementById("cfa").innerHTML=`<div style="text-align:center;padding:2.5rem 1rem;"><svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="#3b82f6" stroke-width="1.5" style="display:block;margin:0 auto 1.1rem;"><circle cx="22" cy="22" r="18"/><path d="M14 22l6 6 10-12"/></svg><h4 style="font-family:var(--serif);font-size:1.3rem;margin-bottom:0.45rem;">Message sent!</h4><p style="font-size:0.83rem;color:var(--muted);line-height:1.7;">I'll read it and get back to you soon.</p></div>`;}
+
+let _rt;
+window.addEventListener("resize",()=>{clearTimeout(_rt);_rt=setTimeout(()=>{const pg=document.querySelector(".sb-nav-link.active")?.dataset.pg||"home";drawPageCharts(pg);},150);},{passive:true});
+
+go("home");
+</script>
+</body>
+</html>
